@@ -21,7 +21,7 @@ class Ventana:
     termino=False
     def __init__(self):
         mpl.rcParams['toolbar'] = 'None'
-        self.fig, (self.grafica_perceptron, self.grafica_errores) = plt.subplots(1, 2)
+        self.fig, self.grafica_perceptron = plt.subplots()
         self.fig.canvas.set_window_title('Perceptron')
         self.fig.set_size_inches(10, 6, forward=True)
         plt.subplots_adjust(bottom=0.3)
@@ -29,9 +29,6 @@ class Ventana:
         self.grafica_perceptron.set_ylim(-1.0,1.0)
         self.fig.suptitle("Algoritmo del perceptron")
         self.grafica_perceptron.set_title("Perceptron")
-        self.grafica_errores.set_title("Errores")
-        self.grafica_errores.set_xlabel("Epoca")
-        self.grafica_errores.set_ylabel("Errores")
         
 
         cordenadas_rango = plt.axes([0.275, 0.15, 0.175, 0.05])
@@ -68,17 +65,14 @@ class Ventana:
             while not self.termino and self.epoca_actual < self.perceptron.epocas_maximas:
                 self.termino = True
                 self.epoca_actual += 1
-                errores = 0
                 for i, x in enumerate(self.puntos):
                     x = np.insert(x, 0, -1.0)
                     error = self.clase_deseada[i] - self.perceptron.pw(x)
                     if error != 0:
-                        errores += 1
                         self.termino = False
                         self.perceptron.pesos = \
                             self.perceptron.pesos + np.multiply((self.perceptron.rango * error), x)
                         self.graficar_linea()
-                self.graficar_errores(errores)
             self.grafica_perceptron.text(-0.25, 0.9,
                               'Convergio' if self.termino else 'No convergio',
                               fontsize=10)
@@ -86,20 +80,8 @@ class Ventana:
             plt.pause(0.1)
             self.perceptron_entrenado = True
 
-    def graficar_errores(self, errores):
-        self.grafica_errores.bar(self.epoca_actual, errores)
-        plt.pause(0.3)
+    
     def evaluar(self,event):
-        self.graficar_sin_evaluar()
-        
-    def inicializar_pesos(self, event):
-        if self.rango_inicializado and self.epocas_maximas>0 and len(self.puntos)>0 and not self.perceptron_entrenado:
-            self.perceptron = Perceptron(self.rango, self.epocas_maximas, [-1.0,1])
-            self.perceptron.inicializar_pesos()
-            self.pesos_inicializados = True
-            self.graficar_linea()
-
-    def graficar_sin_evaluar(self):
         if(self.perceptron_entrenado and len(self.sin_evaluar)>0):
             self.grafica_perceptron.clear()     
             self.grafica_perceptron.set_title("Perceptron")   
@@ -116,6 +98,15 @@ class Ventana:
                                     'gx' if self.perceptron.pw(x)
                                     else 'g.')
             plt.pause(0.1)
+        
+    def inicializar_pesos(self, event):
+        if self.rango_inicializado and self.epocas_maximas>0 and len(self.puntos)>0 and not self.perceptron_entrenado:
+            self.perceptron = Perceptron(self.rango, self.epocas_maximas, [-1.0,1])
+            self.perceptron.inicializar_pesos()
+            self.pesos_inicializados = True
+            self.graficar_linea()
+
+        
     
     def graficar_linea(self):
         x1 = np.array([self.puntos[:, 0].min() - 2, self.puntos[:, 0].max() + 2])
