@@ -1,3 +1,4 @@
+from turtle import forward, right
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import TextBox, Button
@@ -19,40 +20,44 @@ class Ventana:
     linea=None
     texto_de_epoca = None
     termino=False
+
     def __init__(self):
+        #Configuracion inicial de la interfaz grafica.
         mpl.rcParams['toolbar'] = 'None'
         self.fig, self.grafica_perceptron = plt.subplots()
         self.fig.canvas.set_window_title('Perceptron')
-        self.fig.set_size_inches(10, 6, forward=True)
-        plt.subplots_adjust(bottom=0.3)
+        self.fig.set_size_inches(10, 8, forward=True)
+        plt.subplots_adjust(bottom=0.150, top=0.850)
         self.grafica_perceptron.set_xlim(-1.0,1.0)
         self.grafica_perceptron.set_ylim(-1.0,1.0)
         self.fig.suptitle("Algoritmo del perceptron")
-        self.grafica_perceptron.set_title("Perceptron")
-        
-
-        cordenadas_rango = plt.axes([0.275, 0.15, 0.175, 0.05])
-        coordenadas_epcoas = plt.axes([0.7125, 0.15, 0.15, 0.05])
-        coordenadas_pesos = plt.axes([0.225, 0.05, 0.125, 0.05])
-        coordenadas_entrenar = plt.axes([0.4625, 0.05, 0.1, 0.05])
-        coordenadas_evaluar = plt.axes([0.7, 0.05, 0.1, 0.05])
+        # Acomodo de los botones y cajas de texto
+        cordenadas_rango = plt.axes([0.200, 0.9, 0.100, 0.03])
+        coordenadas_epcoas = plt.axes([0.440, 0.9, 0.100, 0.03])
+        coordenadas_pesos = plt.axes([0.025, 0.05, 0.125, 0.03])
+        coordenadas_entrenar = plt.axes([0.160, 0.05, 0.1, 0.03])
+        coordenadas_evaluar = plt.axes([0.270, 0.05, 0.1, 0.03])
+        coordenadas_reiniciar = plt.axes([0.380, 0.05, 0.1, 0.03])
         self.text_box_rango = TextBox(cordenadas_rango, "Rango de aprendizaje:")
-        self.text_box_epocas = TextBox(coordenadas_epcoas, "Epocas maximas:")
+        self.text_box_epocas = TextBox(coordenadas_epcoas, "Épocas maximas:")
         boton_pesos = Button(coordenadas_pesos, "Inicializar pesos")
         boton_entrenar = Button(coordenadas_entrenar, "Entrenar")
         boton_evaluar = Button(coordenadas_evaluar, "Evaluar")
+        boton_reiniciar = Button(coordenadas_reiniciar, "Reiniciar")
         self.text_box_epocas.on_submit(self.validar_epocas)
         self.text_box_rango.on_submit(self.validar_rango)
         boton_pesos.on_clicked(self.inicializar_pesos)
         boton_entrenar.on_clicked(self.entrenar_perceptron)
         boton_evaluar.on_clicked(self.evaluar)
+        boton_reiniciar.on_clicked(self.reiniciar)
         self.fig.canvas.mpl_connect('button_press_event', self.__onclick)
         plt.show()
+
     def __onclick(self, event):
         if event.inaxes == self.grafica_perceptron:
             current_point = [event.xdata, event.ydata]
             if self.perceptron_entrenado:
-                self.grafica_perceptron.plot(event.xdata, event.ydata,'k.')
+                self.grafica_perceptron.plot(event.xdata, event.ydata,'ks')
                 self.sin_evaluar=np.append(self.sin_evaluar, [event.xdata, event.ydata]).reshape([len(self.sin_evaluar) + 1, 2])
             else:
                 self.puntos = np.append(self.puntos, current_point).reshape([len(self.puntos) + 1, 2])
@@ -60,6 +65,7 @@ class Ventana:
                 self.clase_deseada.append(0 if is_left_click else 1)
                 self.grafica_perceptron.plot(event.xdata, event.ydata, 'b.' if is_left_click else 'rx')
             self.fig.canvas.draw()
+
     def entrenar_perceptron(self, event):
         if self.pesos_inicializados and not self.perceptron_entrenado:
             while not self.termino and self.epoca_actual < self.perceptron.epocas_maximas:
@@ -73,24 +79,23 @@ class Ventana:
                         self.perceptron.pesos = \
                             self.perceptron.pesos + np.multiply((self.perceptron.rango * error), x)
                         self.graficar_linea()
-            self.grafica_perceptron.text(-0.25, 0.9,
-                              'Convergio' if self.termino else 'No convergio',
-                              fontsize=10)
-            self.texto_de_epoca.set_text("epocas: %s" % self.epoca_actual)
+            self.grafica_perceptron.text(0, -1.250,
+                              'Resultado = ' + ('Converge' if self.termino else 'No converge'),
+                              fontsize=16)
+            self.texto_de_epoca.set_text("Épocas: %s" % self.epoca_actual)
             plt.pause(0.1)
             self.perceptron_entrenado = True
 
     
     def evaluar(self,event):
         if(self.perceptron_entrenado and len(self.sin_evaluar)>0):
-            self.grafica_perceptron.clear()     
-            self.grafica_perceptron.set_title("Perceptron")   
+            self.grafica_perceptron.clear() 
             self.grafica_perceptron.set_xlim(-1.0,1.0)
             self.grafica_perceptron.set_ylim(-1.0,1.0)
             for j,k in enumerate(self.puntos):
                 self.grafica_perceptron.plot(k[0], k[1], 'b.' if not self.clase_deseada[j] else 'rx')            
             self.grafica_perceptron.plot(self.linea.get_xdata(),self.linea.get_ydata(), 'y-')
-            self.grafica_perceptron.text(0.5, 0.8,'Epoca: %s' % self.epoca_actual, fontsize=10)
+            self.grafica_perceptron.text(0.8, 0.9,'Época: %s' % self.epoca_actual, fontsize=10)
             
             for  i,x in enumerate(self.sin_evaluar):
                 x = np.insert(x, 0, -1.0)
@@ -116,13 +121,13 @@ class Ventana:
         
         if not self.linea:
             self.linea, = self.grafica_perceptron.plot(x1, x2, 'y-')
-            self.texto_de_epoca = self.grafica_perceptron.text(0.5, 0.8,
-                                                        'Epoca: %s' % self.epoca_actual,
+            self.texto_de_epoca = self.grafica_perceptron.text(0.8, 0.9,
+                                                        'Época: %s' % self.epoca_actual,
                                                         fontsize=10)
         else:
             self.linea.set_xdata(x1)
             self.linea.set_ydata(x2)
-            self.texto_de_epoca.set_text('Epoca: %s' % self.epoca_actual)
+            self.texto_de_epoca.set_text('Época: %s' % self.epoca_actual)
         self.fig.canvas.draw()
         plt.pause(0.1)
 
@@ -148,7 +153,24 @@ class Ventana:
         finally:
             self.text_box_epocas.set_val(self.epocas_maximas)
         
-
+    def reiniciar(self, event):
+        self.puntos, self.clase_deseada = np.array([]), []
+        self.sin_evaluar=np.array([])
+        self.perceptron=None
+        self.epoca_actual=0
+        self.epocas_maximas=0
+        self.rango=0.1
+        self.rango_inicializado=False
+        self.pesos_inicializados=False
+        self.perceptron_entrenado=False
+        self.linea=None
+        self.texto_de_epoca = None
+        self.termino=False
+        self.grafica_perceptron.clear()
+        self.grafica_perceptron.set_xlim(-1.0,1.0)
+        self.grafica_perceptron.set_ylim(-1.0,1.0)
+        self.text_box_rango.set_val('')
+        self.text_box_epocas.set_val('')
 
 if __name__ == '__main__':
     Ventana()
