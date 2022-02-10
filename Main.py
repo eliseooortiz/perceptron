@@ -90,10 +90,11 @@ class Ventana:
     def evaluar(self,event):
         if(self.perceptron_entrenado and len(self.sin_evaluar)>0):
             self.grafica_perceptron.clear() 
+            self.barrido()
             self.grafica_perceptron.set_xlim(-1.0,1.0)
             self.grafica_perceptron.set_ylim(-1.0,1.0)
             for j,k in enumerate(self.puntos):
-                self.grafica_perceptron.plot(k[0], k[1], 'b.' if not self.clase_deseada[j] else 'rx')            
+                self.grafica_perceptron.plot(k[0], k[1], 'r.' if not self.clase_deseada[j] else 'bx')            
             self.grafica_perceptron.plot(self.linea.get_xdata(),self.linea.get_ydata(), 'y-')
             self.grafica_perceptron.text(0.8, 0.9,'Época: %s' % self.epoca_actual, fontsize=10)
             
@@ -103,7 +104,7 @@ class Ventana:
                                     'gx' if self.perceptron.pw(x)
                                     else 'g.')
             plt.pause(0.1)
-        self.barrido()
+        
         
     def inicializar_pesos(self, event):
         if self.rango_inicializado and self.epocas_maximas>0 and len(self.puntos)>0 and not self.perceptron_entrenado:
