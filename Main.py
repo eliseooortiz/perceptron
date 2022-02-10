@@ -103,6 +103,7 @@ class Ventana:
                                     'gx' if self.perceptron.pw(x)
                                     else 'g.')
             plt.pause(0.1)
+        self.barrido()
         
     def inicializar_pesos(self, event):
         if self.rango_inicializado and self.epocas_maximas>0 and len(self.puntos)>0 and not self.perceptron_entrenado:
@@ -171,6 +172,20 @@ class Ventana:
         self.grafica_perceptron.set_ylim(-1.0,1.0)
         self.text_box_rango.set_val('')
         self.text_box_epocas.set_val('')
+
+    def barrido(self):
+        x=-1
+        y=1
+        while(y>=-1):
+            x=-1
+            while x<=1:
+                p=[x,y]
+                j = np.insert(p, 0, -1.0)
+                self.grafica_perceptron.plot(x,y, 'r.' if self.perceptron.pw(j) else 'b.')
+                x+=.01
+            y-=.01
+            print(y)
+            
 
 if __name__ == '__main__':
     Ventana()
